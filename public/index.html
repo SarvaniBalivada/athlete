@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athlete Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Add Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Add Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <header>
+        <h1 class="site-title">Athlete Connect</h1>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebar-toggle">&#9776;</button>
+        <ul class="nav-links">
+            <li><a href="#" id="home-link">Home</a></li>
+            <li><a href="#" id="training-link">Training</a></li>
+            <li><a href="#" id="competitions-link">Competitions</a></li>
+            <li><a href="#" id="health-link">Health</a></li>
+            <li><a href="#" id="teams-link">Teams</a></li>
+            <li><a href="#" id="profile-link">Profile</a></li>
+            <li><a href="#" id="logout-link">Logout</a></li>
+        </ul>
+    </div>
+
+    <main>
+        <!-- Login Container -->
+        <div id="login-container">
+            <h2>Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <p>Don't have an account? <a href="#" id="register-toggle">Register</a></p>
+        </div>
+
+        <!-- Register Container -->
+        <div id="register-container" style="display: none;">
+            <h2>Register</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="reg-name">Name</label>
+                    <input type="text" id="reg-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-email">Email</label>
+                    <input type="email" id="reg-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-role">Role</label>
+                    <select id="reg-role" required>
+                        <option value="athlete">Athlete</option>
+                        <option value="coach">Coach</option>
+                        <option value="medical">Medical Staff</option>
+                        <option value="manager">Manager</option>
+                    </select>
+                </div>
+                <button type="submit">Register</button>
+            </form>
+            <p>Already have an account? <a href="#" id="login-toggle">Login</a></p>
+        </div>
+
+        <div id="dashboard-content"></div>
+
+        <!-- Training Section -->
+        <div id="training-container" style="display: none;">
+            <h2>Training Sessions</h2>
+            <button id="add-training-btn">Add New Training</button>
+            <div id="training-list"></div>
+        </div>
+
+        <!-- Competitions Section -->
+        <div id="competitions-container" style="display: none;">
+            <h2>Competitions</h2>
+            <button id="add-competition-btn">Add New Competition</button>
+            <div id="competitions-list"></div>
+        </div>
+
+        <!-- Health Records Section -->
+        <div id="health-container" style="display: none;">
+            <h2>Health Records</h2>
+            <button id="add-health-btn">Add New Health Record</button>
+            <div id="health-list"></div>
+        </div>
+
+        <!-- Teams Section -->
+        <div id="teams-container" style="display: none;">
+            <h2>Teams</h2>
+            <button id="add-team-btn">Add New Team</button>
+            <div id="teams-list"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Athlete Management System</p>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
