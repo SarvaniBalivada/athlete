@@ -1,38 +1,62 @@
+// Firebase initialization
+const firebaseConfig = {
+    apiKey: "AIzaSyDlYY6AiVDm_oMp8WDmaNR-iR8Cx0X3HH0",
+    authDomain: "athlete-4c975.firebaseapp.com",
+    databaseURL: "https://athlete-4c975-default-rtdb.firebaseio.com",
+    projectId: "athlete-4c975",
+    storageBucket: "athlete-4c975.appspot.com",
+    messagingSenderId: "1012046041407",
+    appId: "1:1012046041407:web:4939a7f92615ce8d70438a",
+    measurementId: "G-MKSPH24DTC"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
 // Check if user is logged in
 function checkAuth() {
     const token = localStorage.getItem('token');
+    const sidebar = document.getElementById('sidebar');
+
     if (token) {
-        hideAllContainers(); // Ensure all other main sections are hidden first
+        hideAllContainers();
         const loginContainer = document.getElementById('login-container');
         if (loginContainer) loginContainer.style.display = 'none';
         const registerContainer = document.getElementById('register-container');
         if (registerContainer) registerContainer.style.display = 'none';
-        const dashboardContent = document.getElementById('dashboard-content'); // <-- FIXED
-        if (dashboardContent) dashboardContent.style.display = 'block'; // <-- FIXED
-        document.querySelectorAll('.nav-links li').forEach(item => {
-            item.style.display = 'block';
-        });
-        loadDashboard(); // This function (likely in app.js) populates the dashboard
+        const dashboardContainer = document.getElementById('dashboard-container');
+        if (dashboardContainer) dashboardContainer.style.display = 'block';
+
+        if (sidebar) sidebar.style.display = 'block';
+
+        const navLinks = document.querySelectorAll('.nav-links li');
+        if (navLinks) {
+            navLinks.forEach(item => {
+                item.style.display = 'block';
+            });
+        }
+
+        loadDashboard();
     } else {
-        hideAllContainers(); // Ensure all other main sections are hidden first
+        hideAllContainers();
         const loginContainer = document.getElementById('login-container');
-        if (loginContainer) loginContainer.style.display = 'block'; // Then show the login form
+        if (loginContainer) loginContainer.style.display = 'block';
         const registerContainer = document.getElementById('register-container');
         if (registerContainer) registerContainer.style.display = 'none';
-        // dashboard-container, training-container, etc., are hidden by hideAllContainers()
-        
-        // Hide nav links except home
-        document.querySelectorAll('.nav-links li').forEach(item => {
-            if (item.querySelector('#home-link')) {
-                item.style.display = 'block';
-            } else {
-                item.style.display = 'none';
-            }
-        });
+
+        if (sidebar) sidebar.style.display = 'none';
+
+        const navLinks = document.querySelectorAll('.nav-links li');
+        if (navLinks) {
+            navLinks.forEach(item => {
+                const homeLink = item.querySelector('#home-link');
+                item.style.display = homeLink ? 'block' : 'none';
+            });
+        }
     }
 }
 
-// Login form submission
+
+// Login form
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
@@ -41,16 +65,20 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         const user = userCredential.user;
-        // Optionally, fetch additional user info from Firestore here
+
+        // TEMP: default role as 'coach' (replace with DB fetch later)
+        const defaultRole = 'coach';
+
         localStorage.setItem('token', await user.getIdToken());
-        localStorage.setItem('user', JSON.stringify({ email: user.email, uid: user.uid }));
+        localStorage.setItem('user', JSON.stringify({ email: user.email, uid: user.uid, role: defaultRole }));
+
         checkAuth();
     } catch (error) {
         alert(error.message);
     }
 });
 
-// Register form submission
+// Register form
 document.getElementById('register-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('reg-name').value;
@@ -61,17 +89,18 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     try {
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const user = userCredential.user;
-        // Optionally, save name and role to Firestore here
+
         localStorage.setItem('token', await user.getIdToken());
         localStorage.setItem('user', JSON.stringify({ email: user.email, uid: user.uid, name, role }));
-        alert('Registration successful! Welcome to the Athlete Management System.');
+
+        alert('Registration successful!');
         checkAuth();
     } catch (error) {
         alert(error.message);
     }
 });
 
-// Toggle between login and register forms
+// Toggle forms
 document.getElementById('register-toggle').addEventListener('click', (e) => {
     e.preventDefault();
     document.getElementById('login-container').style.display = 'none';
@@ -84,22 +113,34 @@ document.getElementById('login-toggle').addEventListener('click', (e) => {
     document.getElementById('register-container').style.display = 'none';
 });
 
-// Logout functionality
-document.getElementById('logout-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    checkAuth();
+// Logout
+document.addEventListener('DOMContentLoaded', () => {
+    document.body.addEventListener('click', (e) => {
+        const target = e.target;
+
+        // PROFILE LINK
+        if (target.id === 'profile-link') {
+            e.preventDefault();
+            hideAllContainers();
+            loadProfile();
+        }
+
+        // LOGOUT LINK
+        if (target.id === 'logout-link') {
+            e.preventDefault();
+            auth.signOut().then(() => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                checkAuth();
+            }).catch(error => {
+                alert("Logout failed: " + error.message);
+            });
+        }
+    });
 });
 
-// Profile link handler
-document.getElementById('profile-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    hideAllContainers();
-    loadProfile();
-});
 
-// Load user profile
+
 function loadProfile() {
     const user = JSON.parse(localStorage.getItem('user')) || { name: 'Demo User', email: 'demo@example.com', role: 'coach' };
     
@@ -283,37 +324,18 @@ function createActivityCharts() {
         });
     }
 }
-
-// Helper function to hide all containers
+// Hide all containers
 function hideAllContainers() {
     const containers = [
-        'dashboard-container', 
-        'training-container', 
-        'competitions-container', 
-        'health-container', 
+        'dashboard-container',
+        'training-container',
+        'competitions-container',
+        'health-container',
         'teams-container',
-        'profile-container' // Ensure profile container is hidden when other sections are active
+        'profile-container'
     ];
-    
     containers.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) element.style.display = 'none';
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
     });
 }
-
-// Check authentication status when page loads
-document.addEventListener('DOMContentLoaded', checkAuth);
-
-
-const firebaseConfig = {
-    apiKey: "AIzaSyDlYY6AiVDm_oMp8WDmaNR-iR8Cx0X3HH0",
-    authDomain: "athlete-4c975.firebaseapp.com",
-    databaseURL: "https://athlete-4c975-default-rtdb.firebaseio.com",
-    projectId: "athlete-4c975",
-    storageBucket: "athlete-4c975.appspot.com", // <-- FIXED HERE
-    messagingSenderId: "1012046041407",
-    appId: "1:1012046041407:web:4939a7f92615ce8d70438a",
-    measurementId: "G-MKSPH24DTC"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();

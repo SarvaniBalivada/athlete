@@ -1,40 +1,38 @@
 // Helper function to make authenticated API requests
 async function apiRequest(url, method = 'GET', body = null) {
     const token = localStorage.getItem('token');
-    
+
     const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
     };
-    
-    const options = {
-        method,
-        headers
-    };
-    
-    if (body) {
-        options.body = JSON.stringify(body);
-    }
-    
+
+    const options = { method, headers };
+    if (body) options.body = JSON.stringify(body);
+
     const response = await fetch(url, options);
     const data = await response.json();
-    
+
     if (!response.ok) {
         throw new Error(data.message || 'API request failed');
     }
-    
+
     return data;
 }
 
 // Load dashboard content
 async function loadDashboard() {
-    const user = JSON.parse(localStorage.getItem('user')) || { name: 'Demo User', role: 'coach' };
-    const dashboardContent = document.getElementById('dashboard-content');
+    const storedUser = JSON.parse(localStorage.getItem('user')) || {};
+    const role = storedUser.role || 'coach';
+    const name = storedUser.name || storedUser.email || 'Demo User';
+
+    const dashboardContainer = document.getElementById('dashboard-container');
+    if (!dashboardContainer) return;
 
     let cardsHtml = '';
 
-    if (user.role === 'coach') {
-        cardsHtml = `
+    if (role === 'coach') {
+         cardsHtml = `
             <button class="dashboard-card" id="dashboard-trainings">
                 <div class="dashboard-card-icon trainings"></div>
                 <div>
@@ -64,7 +62,7 @@ async function loadDashboard() {
                 </div>
             </button>
         `;
-    } else if (user.role === 'athlete') {
+    } else if (role === 'athlete') {
         cardsHtml = `
             <button class="dashboard-card" id="dashboard-trainings">
                 <div class="dashboard-card-icon trainings"></div>
@@ -88,7 +86,7 @@ async function loadDashboard() {
                 </div>
             </button>
         `;
-    } else if (user.role === 'medical') {
+    } else if (role === 'medical') {
         cardsHtml = `
             <button class="dashboard-card" id="dashboard-health">
                 <div class="dashboard-card-icon health"></div>
@@ -105,8 +103,8 @@ async function loadDashboard() {
                 </div>
             </button>
         `;
-    } else if (user.role === 'manager') {
-        cardsHtml = `
+    } else if (role === 'manager') {
+         cardsHtml = `
             <button class="dashboard-card" id="dashboard-teams">
                 <div class="dashboard-card-icon teams"></div>
                 <div>
@@ -124,15 +122,13 @@ async function loadDashboard() {
         `;
     }
 
-    dashboardContent.innerHTML = `
+    dashboardContainer.innerHTML = `
         <div class="welcome-card">
-            <h2>Welcome Back, <span class="highlight">${user.name}</span>!</h2>
-            <p>Role: ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
+            <h2>Welcome Back, <span class="highlight">${name}</span>!</h2>
+            <p>Role: ${role.charAt(0).toUpperCase() + role.slice(1)}</p>
             <button class="edit-profile-btn">Edit Profile</button>
         </div>
-        <div class="dashboard-cards">
-            ${cardsHtml}
-        </div>
+        <div class="dashboard-cards">${cardsHtml}</div>
         <div class="dashboard-activity">
             <h3>Recent Activity</h3>
             <canvas id="dashboard-activity-chart" height="80"></canvas>
@@ -155,48 +151,10 @@ async function loadDashboard() {
             </div>
         </div>
     `;
-
-    // Add click handlers for each card (check if element exists before adding)
-    const trainingsBtn = document.getElementById('dashboard-trainings');
-    if (trainingsBtn) {
-        trainingsBtn.onclick = function() {
-            hideAllContainers();
-            document.getElementById('training-container').style.display = 'block';
-            loadTrainings();
-        };
-    }
-    const competitionsBtn = document.getElementById('dashboard-competitions');
-    if (competitionsBtn) {
-        competitionsBtn.onclick = function() {
-            hideAllContainers();
-            document.getElementById('competitions-container').style.display = 'block';
-            loadCompetitions();
-        };
-    }
-    const healthBtn = document.getElementById('dashboard-health');
-    if (healthBtn) {
-        healthBtn.onclick = function() {
-            hideAllContainers();
-            document.getElementById('health-container').style.display = 'block';
-            loadHealthRecords();
-        };
-    }
-    const teamsBtn = document.getElementById('dashboard-teams');
-    if (teamsBtn) {
-        teamsBtn.onclick = function() {
-            hideAllContainers();
-            document.getElementById('teams-container').style.display = 'block';
-            loadTeams();
-        };
-    }
-    const athletesBtn = document.getElementById('dashboard-athletes');
-    if (athletesBtn) {
-        // You can define what happens for medical staff viewing athletes
-        alert('Show athletes list (implement as needed)');
-    }
-
-    // Render a simple Chart.js bar chart for Recent Activity
-    const ctx = document.getElementById('dashboard-activity-chart').getContext('2d');
+    
+    const activityCanvas = document.getElementById('dashboard-activity-chart');
+if (activityCanvas) {
+    const ctx = activityCanvas.getContext('2d');
     new Chart(ctx, {
         type: 'bar',
         data: {
@@ -209,16 +167,13 @@ async function loadDashboard() {
         },
         options: {
             responsive: true,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: { beginAtZero: true }
-            }
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
         }
     });
-
-    const calendarDiv = document.getElementById('athlete-calendar');
+}
+const calendarDiv = document.getElementById('athlete-calendar');
+if (calendarDiv) {
     const today = new Date();
     let calendarHtml = '<table class="calendar-table"><tr>';
     const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -235,26 +190,63 @@ async function loadDashboard() {
     calendarDiv.innerHTML = calendarHtml;
 }
 
-document.getElementById('teams-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    hideAllContainers();
-    document.getElementById('teams-container').style.display = 'block';
-    loadTeams();
-});
+    // Add navigation handlers safely
+    const addNavHandler = (id, showId, loaderFn) => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.onclick = () => {
+                hideAllContainers();
+                const target = document.getElementById(showId);
+                if (target) target.style.display = 'block';
+                if (loaderFn) loaderFn();
+            };
+        }
+    };
 
-// Helper function to hide all containers
-function hideAllContainers() {
-    document.getElementById('dashboard-container').style.display = 'none';
-    document.getElementById('training-container').style.display = 'none';
-    document.getElementById('competitions-container').style.display = 'none';
-    document.getElementById('health-container').style.display = 'none';
-    document.getElementById('teams-container').style.display = 'none';
-    // Hide profile-container if it exists
-    const profileContainer = document.getElementById('profile-container');
-    if (profileContainer) profileContainer.style.display = 'none';
+    addNavHandler('dashboard-trainings', 'training-container', loadTrainings);
+    addNavHandler('dashboard-competitions', 'competitions-container', loadCompetitions);
+    addNavHandler('dashboard-health', 'health-container', loadHealthRecords);
+    addNavHandler('dashboard-teams', 'teams-container', loadTeams);
+    addNavHandler('dashboard-athletes', '', () => alert('Show athletes list (implement as needed)'));
 }
 
-// Sidebar navigation
+// Sidebar links
+const navLinks = [
+    { id: 'home-link', section: 'dashboard-container', loader: loadDashboard },
+    { id: 'training-link', section: 'training-container', loader: loadTrainings },
+    { id: 'competitions-link', section: 'competitions-container', loader: loadCompetitions },
+    { id: 'health-link', section: 'health-container', loader: loadHealthRecords },
+    { id: 'teams-link', section: 'teams-container', loader: loadTeams }
+];
+
+navLinks.forEach(link => {
+    const el = document.getElementById(link.id);
+    if (el) {
+        el.addEventListener('click', e => {
+            e.preventDefault();
+            hideAllContainers();
+            const section = document.getElementById(link.section);
+            if (section) section.style.display = 'block';
+            if (link.loader) link.loader();
+        });
+    }
+});
+
+// Hide all containers
+function hideAllContainers() {
+    const containerIds = [
+        'dashboard-container',
+        'training-container',
+        'competitions-container',
+        'health-container',
+        'teams-container',
+        'profile-container'
+    ];
+    containerIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+}
 document.getElementById('home-link').addEventListener('click', (e) => {
     e.preventDefault();
     hideAllContainers();
@@ -286,336 +278,343 @@ document.getElementById('teams-link').addEventListener('click', (e) => {
     loadTeams();
 });
 
-// Load training sessions
-async function loadTrainings() {
-    const trainingList = document.getElementById('training-list');
-    trainingList.innerHTML = '<p>Loading training sessions...</p>';
-    
-    try {
-        // Sample data for showcase
-        const trainings = [
-            {
-                _id: 'sample1',
-                title: 'Strength Training',
-                athlete: { name: 'John Doe' },
-                coach: { name: 'Coach Smith' },
-                scheduledDate: new Date().toISOString(),
-                status: 'Completed',
-                duration: 60,
-                notes: 'Focus on upper body'
-            },
-            {
-                _id: 'sample2',
-                title: 'Endurance Run',
-                athlete: { name: 'Jane Smith' },
-                coach: { name: 'Coach Johnson' },
-                scheduledDate: new Date(Date.now() + 86400000).toISOString(),
-                status: 'Scheduled',
-                duration: 45,
-                notes: '5km run at moderate pace'
-            },
-            {
-                _id: 'sample3',
-                title: 'Swimming Session',
-                athlete: { name: 'Mike Wilson' },
-                coach: { name: 'Coach Davis' },
-                scheduledDate: new Date(Date.now() - 86400000).toISOString(),
-                status: 'Completed',
-                duration: 90,
-                notes: 'Focus on freestyle technique'
-            }
-        ];
-        
-        let html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th>Athlete</th>
-                        <th>Coach</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        
-        trainings.forEach(training => {
-            html += `
-                <tr>
-                    <td>${training.title}</td>
-                    <td>${training.athlete.name}</td>
-                    <td>${training.coach.name}</td>
-                    <td>${new Date(training.scheduledDate).toLocaleDateString()}</td>
-                    <td>${training.status}</td>
-                    <td>
-                        <button onclick="viewTraining('${training._id}')">View</button>
-                        <button onclick="editTraining('${training._id}')">Edit</button>
-                    </td>
-                </tr>
-            `;
+const db = firebase.database();
+
+
+// Sample loader functions
+let trainings = [];
+
+function loadTrainings() {
+    db.ref('trainings').once('value').then(snapshot => {
+        trainings = [];
+        snapshot.forEach(child => {
+            trainings.push(child.val());
         });
-        
-        html += `
-                </tbody>
-            </table>
-        `;
-        
-        trainingList.innerHTML = html;
-    } catch (error) {
-        console.error('Error loading trainings:', error);
-        trainingList.innerHTML = '<p>Error loading training sessions. Please try again.</p>';
+        renderTrainings();
+    }).catch((error) => {
+        console.error("Error loading trainings:", error);
+    });
+}
+ 
+function renderTrainings() {
+    const trainingList = document.getElementById('training-list');
+    if (!trainingList) return;
+
+    if (trainings.length === 0) {
+        trainingList.innerHTML = `<p>No trainings yet.</p>`;
+        return;
     }
+
+    let html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Athlete</th>
+                    <th>Coach</th>
+                    <th>Date</th>
+                    <th>Status</th>
+
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    trainings.forEach(training => {
+        html += `
+            <tr>
+                <td>${training.title}</td>
+                <td>${training.athlete}</td>
+                <td>${training.coach}</td>
+                <td>${new Date(training.date).toLocaleDateString()}</td>
+                <td>${training.status}</td>
+                
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table>';
+    trainingList.innerHTML = html;
+}
+
+document.getElementById('add-training-btn').addEventListener('click', () => {
+    const form = document.getElementById('add-training-form');
+    if (form) {
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+});
+
+document.getElementById('training-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const newTraining = {
+        title: document.getElementById('training-title').value,
+        athlete: document.getElementById('training-athlete').value,
+        coach: document.getElementById('training-coach').value,
+        date: document.getElementById('training-date').value,
+        status: document.getElementById('training-status').value
+    };
+
+    db.ref('trainings').push(newTraining).then(() => {
+        loadTrainings();
+        e.target.reset();
+        document.getElementById('add-training-form').style.display = 'none';
+    }).catch((error) => {
+        alert("Failed to save training: " + error.message);
+    });
+});
+
+document.addEventListener('DOMContentLoaded', loadTrainings);
+
+
+let competitions = []; // global array
+function loadCompetitions() {
+    db.ref('competitions').once('value').then(snapshot => {
+        competitions = [];
+        snapshot.forEach(child => {
+            competitions.push(child.val());
+        });
+        renderCompetitions();
+    }).catch(error => {
+        console.error("Error loading competitions:", error);
+    });
 }
 
 // Load competitions
-async function loadCompetitions() {
+
+// Render competition list
+function renderCompetitions() {
     const competitionsList = document.getElementById('competitions-list');
-    competitionsList.innerHTML = '<p>Loading competitions...</p>';
-    
-    try {
-        // Sample data for showcase
-        const competitions = [
-            {
-                _id: 'comp1',
-                name: 'Regional Championship',
-                location: 'City Sports Center',
-                date: new Date(Date.now() + 7 * 86400000).toISOString(),
-                status: 'Upcoming',
-                type: 'Tournament'
-            },
-            {
-                _id: 'comp2',
-                name: 'National Finals',
-                location: 'National Stadium',
-                date: new Date(Date.now() + 30 * 86400000).toISOString(),
-                status: 'Registration Open',
-                type: 'Championship'
-            },
-            {
-                _id: 'comp3',
-                name: 'Local Meet',
-                location: 'Community Center',
-                date: new Date(Date.now() - 15 * 86400000).toISOString(),
-                status: 'Completed',
-                type: 'Friendly'
-            }
-        ];
-        
-        let html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Location</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        
-        competitions.forEach(competition => {
-            html += `
-                <tr>
-                    <td>${competition.name}</td>
-                    <td>${competition.location}</td>
-                    <td>${new Date(competition.date).toLocaleDateString()}</td>
-                    <td>${competition.status}</td>
-                    <td>
-                        <button onclick="viewCompetition('${competition._id}')">View</button>
-                        <button onclick="editCompetition('${competition._id}')">Edit</button>
-                    </td>
-                </tr>
-            `;
-        });
-        
-        html += `
-                </tbody>
-            </table>
-        `;
-        
-        competitionsList.innerHTML = html;
-    } catch (error) {
-        console.error('Error loading competitions:', error);
-        competitionsList.innerHTML = '<p>Error loading competitions. Please try again.</p>';
+    if (!competitionsList) return;
+
+    if (competitions.length === 0) {
+        competitionsList.innerHTML = `<p>No competitions yet. Add one!</p>`;
+        return;
     }
+
+    let html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    competitions.forEach(competition => {
+        html += `
+            <tr>
+                <td>${competition.name}</td>
+                <td>${competition.location}</td>
+                <td>${new Date(competition.date).toLocaleDateString()}</td>
+                <td>${competition.status}</td>
+                
+            </tr>
+        `;
+    });
+
+    html += `</tbody></table>`;
+    competitionsList.innerHTML = html;
 }
+
+// Toggle form display
+document.getElementById('add-competition-btn').addEventListener('click', () => {
+    const form = document.getElementById('add-competition-form');
+    if (form) {
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+});
+
+// Handle form submit
+document.getElementById('competition-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const newCompetition = {
+        name: document.getElementById('comp-name').value,
+        location: document.getElementById('comp-location').value,
+        date: document.getElementById('comp-date').value,
+        status: document.getElementById('comp-status').value,
+        type: document.getElementById('comp-type').value
+    };
+
+    db.ref('competitions').push(newCompetition).then(() => {
+        loadCompetitions();
+        e.target.reset();
+        document.getElementById('add-competition-form').style.display = 'none';
+    }).catch(error => {
+        alert("Error saving competition: " + error.message);
+    });
+});
+
+
 
 // Load health records
-async function loadHealthRecords() {
-    const healthList = document.getElementById('health-list');
-    healthList.innerHTML = '<p>Loading health records...</p>';
-    
-    try {
-        // Sample data for showcase
-        const healthRecords = [
-            {
-                _id: 'health1',
-                date: new Date().toISOString(),
-                athlete: { name: 'John Doe' },
-                type: 'Injury',
-                status: 'Recovery',
-                notes: 'Minor ankle sprain, 2 weeks recovery'
-            },
-            {
-                _id: 'health2',
-                date: new Date(Date.now() - 10 * 86400000).toISOString(),
-                athlete: { name: 'Jane Smith' },
-                type: 'Medical Checkup',
-                status: 'Completed',
-                notes: 'Annual physical examination, all clear'
-            },
-            {
-                _id: 'health3',
-                date: new Date(Date.now() - 5 * 86400000).toISOString(),
-                athlete: { name: 'Mike Wilson' },
-                type: 'Nutrition',
-                status: 'Ongoing',
-                notes: 'Diet plan adjustment for competition preparation'
-            }
-        ];
-        
-        let html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Athlete</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        
-        healthRecords.forEach(record => {
-            html += `
-                <tr>
-                    <td>${new Date(record.date).toLocaleDateString()}</td>
-                    <td>${record.athlete.name}</td>
-                    <td>${record.type}</td>
-                    <td>${record.status}</td>
-                    <td>
-                        <button onclick="viewHealthRecord('${record._id}')">View</button>
-                        <button onclick="editHealthRecord('${record._id}')">Edit</button>
-                    </td>
-                </tr>
-            `;
+let healthRecords = [];
+function loadHealthRecords() {
+    db.ref('healthRecords').once('value').then(snapshot => {
+        healthRecords = [];
+        snapshot.forEach(child => {
+            healthRecords.push(child.val());
         });
-        
-        html += `
-                </tbody>
-            </table>
-        `;
-        
-        healthList.innerHTML = html;
-    } catch (error) {
-        console.error('Error loading health records:', error);
-        healthList.innerHTML = '<p>Error loading health records. Please try again.</p>';
-    }
+        renderHealthRecords();
+    }).catch(error => {
+        console.error("Error loading health records:", error);
+    });
 }
+
+
+function renderHealthRecords() {
+    const healthList = document.getElementById('health-list');
+    if (!healthList) return;
+
+    if (healthRecords.length === 0) {
+        healthList.innerHTML = `<p>No health records. Add one!</p>`;
+        return;
+    }
+
+    let html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Athlete</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    healthRecords.forEach(record => {
+        html += `
+            <tr>
+                <td>${new Date(record.date).toLocaleDateString()}</td>
+                <td>${record.athlete}</td>
+                <td>${record.type}</td>
+                <td>${record.status}</td>
+                
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table>';
+    healthList.innerHTML = html;
+}
+document.getElementById('add-health-btn').addEventListener('click', () => {
+    const form = document.getElementById('add-health-form');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+});
+
+document.getElementById('health-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const newHealth = {
+        date: document.getElementById('health-date').value,
+        athlete: document.getElementById('health-athlete').value,
+        type: document.getElementById('health-type').value,
+        status: document.getElementById('health-status').value,
+        notes: document.getElementById('health-notes').value
+    };
+
+    db.ref('healthRecords').push(newHealth).then(() => {
+        loadHealthRecords();
+        e.target.reset();
+        document.getElementById('add-health-form').style.display = 'none';
+    }).catch(error => {
+        alert("Error saving health record: " + error.message);
+    });
+});
+
+
 
 // Load teams
-async function loadTeams() {
-    const teamsList = document.getElementById('teams-list');
-    teamsList.innerHTML = '<p>Loading teams...</p>';
-    
-    try {
-        // Sample data for showcase
-        const teams = [
-            {
-                _id: 'team1',
-                name: 'Eagles Track Team',
-                sport: 'Track & Field',
-                athletes: [{ name: 'John Doe' }, { name: 'Jane Smith' }],
-                coaches: [{ name: 'Coach Smith' }],
-                description: 'Competitive track and field team focusing on sprints and jumps'
-            },
-            {
-                _id: 'team2',
-                name: 'Sharks Swim Club',
-                sport: 'Swimming',
-                athletes: [{ name: 'Mike Wilson' }, { name: 'Sarah Johnson' }],
-                coaches: [{ name: 'Coach Davis' }],
-                description: 'Elite swimming team competing at regional and national levels'
-            }
-        ];
-        
-        let html = `
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Sport</th>
-                        <th>Athletes</th>
-                        <th>Coaches</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        
-        teams.forEach(team => {
-            html += `
-                <tr>
-                    <td>${team.name}</td>
-                    <td>${team.sport}</td>
-                    <td>${team.athletes.length}</td>
-                    <td>${team.coaches.length}</td>
-                    <td>
-                        <button onclick="viewTeam('${team._id}')">View</button>
-                        <button onclick="editTeam('${team._id}')">Edit</button>
-                    </td>
-                </tr>
-            `;
+let teams = []; // Fixed variable name from 'team' to 'teams'
+
+
+function loadTeams() {
+    db.ref('teams').once('value').then(snapshot => {
+        teams = [];
+        snapshot.forEach(child => {
+            teams.push(child.val());
         });
-        
-        html += `
-                </tbody>
-            </table>
-        `;
-        
-        teamsList.innerHTML = html;
-    } catch (error) {
-        console.error('Error loading teams:', error);
-        teamsList.innerHTML = '<p>Error loading teams. Please try again.</p>';
-    }
+        renderTeams();
+    }).catch(error => {
+        console.error("Error loading teams:", error);
+    });
 }
 
-// Global functions for viewing and editing items
-window.viewCompetition = function(id) {
-    // Implement view competition details
-    alert(`View competition with ID: ${id}`);
-};
+function renderTeams() {
+    const teamsList = document.getElementById('teams-list');
+    if (!teamsList) return;
 
-window.editCompetition = function(id) {
-    // Implement edit competition
-    alert(`Edit competition with ID: ${id}`);
-};
+    if (teams.length === 0) {
+        teamsList.innerHTML = `<p>No teams yet. Add one!</p>`;
+        return;
+    }
 
-window.viewHealthRecord = function(id) {
-    // Implement view health record details
-    alert(`View health record with ID: ${id}`);
-};
+    let html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Sport</th>
+                    <th>Athletes</th>
+                    <th>Coaches</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
 
-window.editHealthRecord = function(id) {
-    // Implement edit health record
-    alert(`Edit health record with ID: ${id}`);
-};
+    teams.forEach(team => {
+        html += `
+            <tr>
+                <td>${team.sport}</td>
+                <td>${team.athletes.join(', ')}</td>
+                <td>${team.coaches.join(', ')}</td>
+                <td>${team.description}</td>
+            </tr>
+        `;
+    });
 
-window.viewTeam = function(id) {
-    // Implement view team details
-    alert(`View team with ID: ${id}`);
-};
+    html += `</tbody></table>`;
+    teamsList.innerHTML = html;
+}
 
-window.editTeam = function(id) {
-    // Implement edit team
-    alert(`Edit team with ID: ${id}`);
-};
+document.getElementById('add-team-btn').addEventListener('click', () => {
+    editingTeamId = null; // fresh create
+    document.getElementById('team-form').reset();
+    document.getElementById('add-team-form').style.display = 'block';
+    document.getElementById('save-team-btn').textContent = 'Save Team';
+    document.getElementById('team-form-heading').textContent = 'Add Team';
+});
+
+
+document.getElementById('team-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const newTeam = {
+        name: document.getElementById('team-name').value,
+        sport: document.getElementById('team-sport').value,
+        athletes: document.getElementById('team-athletes').value.split(',').map(a => a.trim()),
+        coaches: document.getElementById('team-coaches').value.split(',').map(c => c.trim()),
+        description: document.getElementById('team-description').value
+    };
+
+    db.ref('teams').push(newTeam).then(() => {
+        loadTeams();
+        e.target.reset();
+        document.getElementById('add-team-form').style.display = 'none';
+    }).catch(error => {
+        alert("Error saving team: " + error.message);
+    });
+});
+
+
 
 // Add event listeners for the "Add New" buttons
 document.getElementById('add-training-btn').addEventListener('click', () => {
@@ -635,13 +634,19 @@ document.getElementById('add-team-btn').addEventListener('click', () => {
     // Show form to add new team
 });
 
-// Sidebar toggle functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const sidebarToggle = document.getElementById('sidebar-toggle');
-    const sidebar = document.getElementById('sidebar');
-    if (sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('collapsed');
-        });
-    }
+// Sidebar toggle
+// sidebar.js
+
+window.addEventListener('DOMContentLoaded', () => {
+  const toggleButton = document.getElementById('sidebar-toggle');
+  const sidebar = document.getElementById('sidebar');
+
+  if (toggleButton && sidebar) {
+    toggleButton.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+    });
+  } else {
+    console.error("Sidebar or toggle button not found");
+  }
 });
+

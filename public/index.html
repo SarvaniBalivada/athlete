@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Athlete Management System</title>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Add Chart.js library -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Add Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Athlete Management System</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 </head>
 <body>
-    <header>
-        <h1 class="site-title">Athlete Connect</h1>
-    </header>
+  <header>
+    <h1 class="site-title">Athlete Connect</h1>
+  </header>
 
-    <div class="sidebar" id="sidebar">
+  
+ <div class="sidebar" id="sidebar">
         <button class="sidebar-toggle" id="sidebar-toggle">&#9776;</button>
         <ul class="nav-links">
             <li><a href="#" id="home-link">Home</a></li>
@@ -29,90 +32,187 @@
         </ul>
     </div>
 
-    <main>
-        <!-- Login Container -->
-        <div id="login-container">
-            <h2>Login</h2>
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required>
-                </div>
-                <button type="submit">Login</button>
-            </form>
-            <p>Don't have an account? <a href="#" id="register-toggle">Register</a></p>
+  <main>
+    <div id="profile-container" style="display: none;">
+      <div id="profile-content"></div>
+    </div>
+
+    <!-- Login Container -->
+    <div id="login-container">
+      <h2>Login</h2>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" required />
         </div>
-
-        <!-- Register Container -->
-        <div id="register-container" style="display: none;">
-            <h2>Register</h2>
-            <form id="register-form">
-                <div class="form-group">
-                    <label for="reg-name">Name</label>
-                    <input type="text" id="reg-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-email">Email</label>
-                    <input type="email" id="reg-email" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-password">Password</label>
-                    <input type="password" id="reg-password" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-role">Role</label>
-                    <select id="reg-role" required>
-                        <option value="athlete">Athlete</option>
-                        <option value="coach">Coach</option>
-                        <option value="medical">Medical Staff</option>
-                        <option value="manager">Manager</option>
-                    </select>
-                </div>
-                <button type="submit">Register</button>
-            </form>
-            <p>Already have an account? <a href="#" id="login-toggle">Login</a></p>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required />
         </div>
+        <button type="submit">Login</button>
+      </form>
+      <p>Don't have an account? <a href="#" id="register-toggle">Register</a></p>
+    </div>
 
-        <div id="dashboard-content"></div>
+   
+    <!-- Register Container -->
+<div id="register-container" style="display: none;">
+  <h2>Register</h2>
+  <form id="register-form">
+    <div class="form-group">
+      <label for="reg-name">Name</label>
+      <input type="text" id="reg-name" required />
+    </div>
+    <div class="form-group">
+      <label for="reg-email">Email</label>
+      <input type="email" id="reg-email" required />
+    </div>
+    <div class="form-group">
+      <label for="reg-password">Password</label>
+      <input type="password" id="reg-password" required />
+    </div>
+    <div class="form-group">
+      <label for="reg-role">Role</label>
+      <select id="reg-role" required>
+        <option value="coach">Coach</option>
+        <option value="athlete">Athlete</option>
+        <option value="medical">Medical</option>
+        <option value="manager">Manager</option>
+      </select>
+    </div>
+    <button type="submit">Register</button>
+  </form>
+  <p>Already have an account? <a href="#" id="login-toggle">Login</a></p>
+</div>
 
-        <!-- Training Section -->
-        <div id="training-container" style="display: none;">
-            <h2>Training Sessions</h2>
-            <button id="add-training-btn">Add New Training</button>
-            <div id="training-list"></div>
-        </div>
 
-        <!-- Competitions Section -->
-        <div id="competitions-container" style="display: none;">
-            <h2>Competitions</h2>
-            <button id="add-competition-btn">Add New Competition</button>
-            <div id="competitions-list"></div>
-        </div>
 
-        <!-- Health Records Section -->
-        <div id="health-container" style="display: none;">
-            <h2>Health Records</h2>
-            <button id="add-health-btn">Add New Health Record</button>
-            <div id="health-list"></div>
-        </div>
 
-        <!-- Teams Section -->
-        <div id="teams-container" style="display: none;">
-            <h2>Teams</h2>
-            <button id="add-team-btn">Add New Team</button>
-            <div id="teams-list"></div>
-        </div>
-    </main>
+    <!-- Dashboard (FIXED!) -->
+    <div id="dashboard-container" style="display: none;"></div>
+  
+    <!-- Training Section -->
+    <div id="training-container" style="display: none;">
+      <h2>Training Sessions</h2>
+      <button id="add-training-btn">Add New Training</button>
+       <div id="add-training-form" style="display: none; margin-top: 20px;">
+    <h3>Add Training</h3>
+    <form id="training-form">
+      <input type="text" id="training-title" placeholder="Title" required />
+      <input type="text" id="training-athlete" placeholder="Athlete Name" required />
+      <input type="text" id="training-coach" placeholder="Coach Name" required />
+      <input type="date" id="training-date" required />
+      <input type="text" id="training-status" placeholder="Status" required />
+      <button type="submit">Save Training</button>
+    </form>
+  </div>
+      <div id="training-list"></div>
+    </div>
 
-    <footer>
-        <p>&copy; 2023 Athlete Management System</p>
-    </footer>
+    <!-- Competitions Section -->
+    <div id="competitions-container" style="display: none;">
+  <h2>Competitions</h2>
+  <button id="add-competition-btn">Add New Competition</button>
 
-    <script src="js/auth.js"></script>
-    <script src="js/app.js"></script>
+  <!-- Competition Form -->
+  <div id="add-competition-form" style="display: none; margin-top: 20px;">
+    <h3>Add Competition</h3>
+    <form id="competition-form">
+      <div class="form-group">
+        <label for="comp-name">Name</label>
+        <input type="text" id="comp-name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="comp-location">Location</label>
+        <input type="text" id="comp-location" required />
+      </div>
+
+      <div class="form-group">
+        <label for="comp-date">Date</label>
+        <input type="date" id="comp-date" required />
+      </div>
+
+      <div class="form-group">
+        <label for="comp-status">Status</label>
+        <select id="comp-status" required>
+          <option value="Upcoming">Upcoming</option>
+          <option value="Completed">Completed</option>
+          <option value="Registration Open">Registration Open</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="comp-type">Type</label>
+        <input type="text" id="comp-type" required />
+      </div>
+
+      <button type="submit">Save Competition</button>
+    </form>
+  </div>
+
+  <!-- List of Competitions -->
+  <div id="competitions-list" style="margin-top: 20px;"></div>
+</div>
+
+    <!-- Health Records Section -->
+    <div id="health-container" style="display: none;">
+      <h2>Health Records</h2>
+      <button id="add-health-btn">Add New Health Record</button>
+      <div id="add-health-form" style="display: none; margin-top: 20px;">
+    <h3>Add Health Record</h3>
+    <form id="health-form">
+      <input type="date" id="health-date" required />
+      <input type="text" id="health-athlete" placeholder="Athlete Name" required />
+      <input type="text" id="health-type" placeholder="Type (Injury, Checkup)" required />
+      <input type="text" id="health-status" placeholder="Status" required />
+      <textarea id="health-notes" placeholder="Notes" required></textarea>
+      <button type="submit">Save Health Record</button>
+    </form>
+  </div>
+      <div id="health-list"></div>
+    </div>
+
+    <!-- Teams Section -->
+   
+<div id="teams-container" style="display: none;">
+  <h2>Teams</h2>
+  <button id="add-team-btn">Add New Team</button>
+
+  <div id="add-team-form" style="display: none; margin-top: 20px;">
+    <h3 id="team-form-heading">Add Team</h3>
+    <form id="team-form">
+      <div class="form-group">
+        <label for="team-name">Team Name</label>
+        <input type="text" id="team-name" required />
+      </div>
+      <div class="form-group">
+        <label for="team-sport">Sport</label>
+        <input type="text" id="team-sport" required />
+      </div>
+      <div class="form-group">
+        <label for="team-athletes">Athletes (comma-separated)</label>
+        <input type="text" id="team-athletes" required />
+      </div>
+      <div class="form-group">
+        <label for="team-coaches">Coaches (comma-separated)</label>
+        <input type="text" id="team-coaches" required />
+      </div>
+      <div class="form-group">
+        <label for="team-description">Description</label>
+        <input type="text" id="team-description" />
+      </div>
+      <button id="save-team-btn" type="submit">Save Team</button>
+    </form>
+  </div>
+
+  <div id="teams-list" style="margin-top: 20px;"></div>
+</div>
+
+  </main>
+
+
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
