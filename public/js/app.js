@@ -182,22 +182,22 @@ async function loadDashboard() {
     const teams = Object.values(teamsSnapshot.val() || {});
    
     // 👇 Log all athlete names from Firebase
-console.log("📦 All trainings:", trainings.map(t => t.athlete));
-console.log("🙋 Logged in name:", name);
+    console.log("📦 All trainings:", trainings.map(t => t.athlete));
+    console.log("🙋 Logged in name:", name);
 
-// 👇 Name matching
-const loginNamePart = name.toLowerCase().split(/[\s\d]/)[0]; // e.g., "sarvani" from "sarvani1"
-myTrainings = trainings.filter(t =>
-  t.athlete?.toLowerCase().includes(loginNamePart)
-);
+    // 👇 Name matching
+    const loginNamePart = name.toLowerCase().split(/[\s\d]/)[0]; // e.g., "sarvani" from "sarvani1"
+    myTrainings = trainings.filter(t =>
+    t.athlete?.toLowerCase().includes(loginNamePart)
+    );
 
-// ✅ Log matched trainings
-console.log("✅ Matched trainings:", myTrainings.map(t => t.date));
+    // ✅ Log matched trainings
+    console.log("✅ Matched trainings:", myTrainings.map(t => t.date));
 
-// 👇 Smart date parser
-    myCompetitions = competitions.filter(c =>
-  c.athletename?.toLowerCase().includes(loginNamePart)
-);
+    // 👇 Smart date parser
+        myCompetitions = competitions.filter(c =>
+    c.athletename?.toLowerCase().includes(loginNamePart)
+    );
 
     const myHealth = health.filter(h => h.athlete === name);
 
@@ -267,88 +267,89 @@ console.log("✅ Matched trainings:", myTrainings.map(t => t.date));
     
     // Chart data loop
     myTrainings.forEach(t => {
-      const date = smartParseDate(t.date);
-      if (!date) {
-        console.log("⛔ Invalid date skipped:", t.date);
-        return;
-      }
+
+        const date = smartParseDate(t.date);
+        if (!date) {
+            console.log("⛔ Invalid date skipped:", t.date);
+            return;
+        }
     
-      date.setHours(0, 0, 0, 0);
-      const dayDiff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
-    
-      if (dayDiff >= 0 && dayDiff < 7) {
-        const weekday = date.getDay(); // 0 = Sun, 6 = Sat
-        console.log(`📊 +1 on ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][weekday]}`);
-        trainingActivity[weekday]++;
-      } else {
-        console.log("📅 Skipped old training:", t.date);
-      }
+        date.setHours(0, 0, 0, 0);
+        const dayDiff = Math.floor((today - date) / (1000 * 60 * 60 * 24));
+        
+        if (dayDiff >= 0 && dayDiff < 7) {
+            const weekday = date.getDay(); // 0 = Sun, 6 = Sat
+            console.log(`📊 +1 on ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][weekday]}`);
+            trainingActivity[weekday]++;
+        } else {
+            console.log("📅 Skipped old training:", t.date);
+        }
     });
     
     // Final chart data
     console.log("📈 Chart data:", trainingActivity);
 
 
-setTimeout(() => {
-  const canvas = document.getElementById('dashboard-activity-chart');
-  if (canvas) {
-      const ctx = canvas.getContext('2d');
-      new Chart(ctx, {
-          type: 'bar',
-          data: {
-              labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-              datasets: [{
-                  label: 'Trainings (last 7 days)',
-                  data: trainingActivity,
-                  backgroundColor: '#3498db'
-              }]
-          },
-          options: {
-              responsive: true,
-              plugins: { legend: { display: false } },
-              scales: {
-                  y: {
-                      beginAtZero: true,
-                      ticks: { stepSize: 1, precision: 0 }
-                  }
-              }
-          }
-      });
-  }
-}, 100); // Wait 100ms to ensure DOM is rendered
+    setTimeout(() => {
+    const canvas = document.getElementById('dashboard-activity-chart');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                datasets: [{
+                    label: 'Trainings (last 7 days)',
+                    data: trainingActivity,
+                    backgroundColor: '#3498db'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0 }
+                    }
+                }
+            }
+        });
+    }
+    }, 100); // Wait 100ms to ensure DOM is rendered
 
-updateCalendar();
-loadMyConnections();
-// Attach profile edit button handler after DOM is injected
-const editBtn = document.getElementById('edit-profile-btn');
-if (editBtn) {
-  editBtn.addEventListener('click', () => {
-    hideAllContainers();
-    loadProfile();
-  });
-}
+    updateCalendar();
+    loadMyConnections();
+    // Attach profile edit button handler after DOM is injected
+    const editBtn = document.getElementById('edit-profile-btn');
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            hideAllContainers();
+            loadProfile();
+        });
+    }
 
 
 
-    // Add navigation handlers safely
+        // Add navigation handlers safely
     const addNavHandler = (id, showId, loaderFn) => {
         const btn = document.getElementById(id);
-        if (btn) {
-            btn.onclick = () => {
-                hideAllContainers();
-                const target = document.getElementById(showId);
-                if (target) target.style.display = 'block';
-                if (loaderFn) loaderFn();
-            };
-        }
-    };
-    setTimeout(()=>{
-        addNavHandler('dashboard-trainings', 'training-container', loadTrainings);
-        addNavHandler('dashboard-competitions', 'competitions-container', loadCompetitions);
-        addNavHandler('dashboard-health', 'health-container', loadHealthRecords);
-        addNavHandler('dashboard-teams', 'teams-container', loadTeams);
-        addNavHandler('dashboard-athletes', '', () => alert('Show athletes list (implement as needed)'));
-    },50);
+            if (btn) {
+                btn.onclick = () => {
+                    hideAllContainers();
+                    const target = document.getElementById(showId);
+                    if (target) target.style.display = 'block';
+                    if (loaderFn) loaderFn();
+                };
+            }
+        };
+        setTimeout(()=>{
+            addNavHandler('dashboard-trainings', 'training-container', loadTrainings);
+            addNavHandler('dashboard-competitions', 'competitions-container', loadCompetitions);
+            addNavHandler('dashboard-health', 'health-container', loadHealthRecords);
+            addNavHandler('dashboard-teams', 'teams-container', loadTeams);
+            addNavHandler('dashboard-athletes', '', () => alert('Show athletes list (implement as needed)'));
+        },50);
 
 }
 
@@ -534,7 +535,7 @@ function loadCompetitions() {
     });
 }
 
-// Load competitions
+
 
 // Render competition list
 function renderCompetitions() {

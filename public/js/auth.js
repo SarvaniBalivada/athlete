@@ -20,7 +20,7 @@ function checkAuth() {
 
     firebase.auth().onAuthStateChanged((user) => {
         if (user) {
-            // ✅ Firebase confirms user is logged in
+            //  Firebase confirms user is logged in
             hideAllContainers();
             const loginContainer = document.getElementById('login-container');
             if (loginContainer) loginContainer.style.display = 'none';
@@ -40,7 +40,7 @@ function checkAuth() {
 
             loadDashboard();
         } else {
-            // ❌ Firebase says user is NOT logged in
+            //  Firebase says user is NOT logged in
             hideAllContainers();
             const loginContainer = document.getElementById('login-container');
             if (loginContainer) loginContainer.style.display = 'block';
@@ -74,28 +74,28 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         // TEMP: default role as 'coach' (replace with DB fetch later)
            const token = await user.getIdToken();
 
-    // ✅ Fetch full profile from Realtime DB
+        //  Fetch full profile from Realtime DB
 
-    const snapshot = await firebase.database().ref(`users/${user.uid}`).once("value");
-    const profile = snapshot.val();
-
-
-    if (!profile) {
-      alert("No profile found in database.");
-      return;
-    }
-
-    // ✅ Save correct profile info to localStorage
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify({
-      uid: user.uid,
-      email: user.email,
-      name: profile.name,
-      role: profile.role
-    }));
+        const snapshot = await firebase.database().ref(`users/${user.uid}`).once("value");
+        const profile = snapshot.val();
 
 
-        checkAuth();
+        if (!profile) {
+        alert("No profile found in database.");
+        return;
+        }
+
+        //  Save correct profile info to localStorage
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        name: profile.name,
+        role: profile.role
+        }));
+
+
+            checkAuth();
     } catch (error) {
         alert(error.message);
     }
@@ -272,11 +272,11 @@ function loadProfile() {
     });
     
     // Create pie charts for activity data
-    console.log("🎯 Canvas:", document.getElementById('training-chart'));
+    
 
 
-        setTimeout(() => {
-    createActivityCharts();
+    setTimeout(() => {
+        createActivityCharts();
     }, 100);
 
     document.getElementById('edit-profile-btn').addEventListener('click', () => {
@@ -295,10 +295,10 @@ function createActivityCharts() {
 
   const userName = user.name.toLowerCase();
 
-  // ✅ Fix 1: Correct database paths (removed stray '}' characters)
+  //  Fix 1: Correct database paths (removed stray '}' characters)
   const trainingRef = firebase.database().ref('trainings');
-  const competitionRef = firebase.database().ref('competitions'); // ✅ fixed
-  const healthRef = firebase.database().ref('healthRecords');     // ✅ fixed
+  const competitionRef = firebase.database().ref('competitions'); 
+  const healthRef = firebase.database().ref('healthRecords');     
 
   Promise.all([
     trainingRef.once("value"),
@@ -310,16 +310,16 @@ function createActivityCharts() {
     const competitionRaw = competitionSnap.val() || {};
     const healthRaw = healthSnap.val() || {};
 
-    // ✅ Filter only user's trainings (based on athlete field)
+    //  Filter only user's trainings (based on athlete field)
     const userTrainings = Object.values(trainingRaw);
 
-    // ✅ Use all competitions directly — no athlete field in your data
+    //  Use all competitions directly — no athlete field in your data
     const allCompetitions = Object.values(competitionRaw);
 
-    // ✅ Filter only user's health records
+    //  Filter only user's health records
     const userHealth = Object.values(healthRaw);
 
-    // ✅ Training Chart
+    //  Training Chart
     if (trainingChartInstance) trainingChartInstance.destroy();
     trainingChartInstance = new Chart(document.getElementById('training-chart'), {
       type: 'pie',
@@ -336,7 +336,7 @@ function createActivityCharts() {
       }
     });
 
-    // ✅ Competitions Chart
+    //  Competitions Chart
     if (competitionsChartInstance) competitionsChartInstance.destroy();
     competitionsChartInstance = new Chart(document.getElementById('competitions-chart'), {
       type: 'pie',
@@ -353,7 +353,7 @@ function createActivityCharts() {
       }
     });
 
-    // ✅ Health Chart
+    //  Health Chart
     if (healthChartInstance) healthChartInstance.destroy();
     healthChartInstance = new Chart(document.getElementById('health-chart'), {
       type: 'pie',
@@ -372,7 +372,7 @@ function createActivityCharts() {
 
   })
   .catch(error => {
-    console.error("🔥 Error loading chart data:", error);
+    console.error(" Error loading chart data:", error);
   });
 }
 

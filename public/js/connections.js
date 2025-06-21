@@ -243,7 +243,7 @@ function cancelConnection(otherUid) {
   const ref1 = firebase.database().ref(`connections/${user.uid}/${otherUid}`);
   const ref2 = firebase.database().ref(`connections/${otherUid}/${user.uid}`);
 
-  // 🔥 Remove both sides
+  //  Remove both sides
   ref1.remove()
     .then(() => ref2.remove())
     .then(() => {
