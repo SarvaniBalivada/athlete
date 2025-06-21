@@ -12,47 +12,52 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+
+
 // Check if user is logged in
 function checkAuth() {
-    const token = localStorage.getItem('token');
     const sidebar = document.getElementById('sidebar');
 
-    if (token) {
-        hideAllContainers();
-        const loginContainer = document.getElementById('login-container');
-        if (loginContainer) loginContainer.style.display = 'none';
-        const registerContainer = document.getElementById('register-container');
-        if (registerContainer) registerContainer.style.display = 'none';
-        const dashboardContainer = document.getElementById('dashboard-container');
-        if (dashboardContainer) dashboardContainer.style.display = 'block';
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            // ✅ Firebase confirms user is logged in
+            hideAllContainers();
+            const loginContainer = document.getElementById('login-container');
+            if (loginContainer) loginContainer.style.display = 'none';
+            const registerContainer = document.getElementById('register-container');
+            if (registerContainer) registerContainer.style.display = 'none';
+            const dashboardContainer = document.getElementById('dashboard-container');
+            if (dashboardContainer) dashboardContainer.style.display = 'block';
 
-        if (sidebar) sidebar.style.display = 'block';
+            if (sidebar) sidebar.style.display = 'block';
 
-        const navLinks = document.querySelectorAll('.nav-links li');
-        if (navLinks) {
-            navLinks.forEach(item => {
-                item.style.display = 'block';
-            });
+            const navLinks = document.querySelectorAll('.nav-links li');
+            if (navLinks) {
+                navLinks.forEach(item => {
+                    item.style.display = 'block';
+                });
+            }
+
+            loadDashboard();
+        } else {
+            // ❌ Firebase says user is NOT logged in
+            hideAllContainers();
+            const loginContainer = document.getElementById('login-container');
+            if (loginContainer) loginContainer.style.display = 'block';
+            const registerContainer = document.getElementById('register-container');
+            if (registerContainer) registerContainer.style.display = 'none';
+
+            if (sidebar) sidebar.style.display = 'none';
+
+            const navLinks = document.querySelectorAll('.nav-links li');
+            if (navLinks) {
+                navLinks.forEach(item => {
+                    const homeLink = item.querySelector('#home-link');
+                    item.style.display = homeLink ? 'block' : 'none';
+                });
+            }
         }
-
-        loadDashboard();
-    } else {
-        hideAllContainers();
-        const loginContainer = document.getElementById('login-container');
-        if (loginContainer) loginContainer.style.display = 'block';
-        const registerContainer = document.getElementById('register-container');
-        if (registerContainer) registerContainer.style.display = 'none';
-
-        if (sidebar) sidebar.style.display = 'none';
-
-        const navLinks = document.querySelectorAll('.nav-links li');
-        if (navLinks) {
-            navLinks.forEach(item => {
-                const homeLink = item.querySelector('#home-link');
-                item.style.display = homeLink ? 'block' : 'none';
-            });
-        }
-    }
+    });
 }
 
 
@@ -67,10 +72,28 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         const user = userCredential.user;
 
         // TEMP: default role as 'coach' (replace with DB fetch later)
-        const defaultRole = 'coach';
+           const token = await user.getIdToken();
 
-        localStorage.setItem('token', await user.getIdToken());
-        localStorage.setItem('user', JSON.stringify({ email: user.email, uid: user.uid, role: defaultRole }));
+    // ✅ Fetch full profile from Realtime DB
+
+    const snapshot = await firebase.database().ref(`users/${user.uid}`).once("value");
+    const profile = snapshot.val();
+
+
+    if (!profile) {
+      alert("No profile found in database.");
+      return;
+    }
+
+    // ✅ Save correct profile info to localStorage
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify({
+      uid: user.uid,
+      email: user.email,
+      name: profile.name,
+      role: profile.role
+    }));
+
 
         checkAuth();
     } catch (error) {
@@ -89,10 +112,16 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     try {
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const user = userCredential.user;
-
-        localStorage.setItem('token', await user.getIdToken());
-        localStorage.setItem('user', JSON.stringify({ email: user.email, uid: user.uid, name, role }));
-
+        
+         await firebase.database().ref(`users/${user.uid}`).set({
+            name: name,
+            email: email,
+            role: role,
+            createdAt: new Date().toISOString()
+            });
+        const token = await user.getIdToken();
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify({ uid: user.uid, email, name, role}));
         alert('Registration successful!');
         checkAuth();
     } catch (error) {
@@ -142,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 function loadProfile() {
-    const user = JSON.parse(localStorage.getItem('user')) || { name: 'Demo User', email: 'demo@example.com', role: 'coach' };
+    const user = JSON.parse(localStorage.getItem('user')) || { name: 'Demo User', email: 'demo@example.com', role: 'coach',uid: 'test-user-uid' };
     
     // Create a profile container if it doesn't exist
     if (!document.getElementById('profile-container')) {
@@ -243,87 +272,113 @@ function loadProfile() {
     });
     
     // Create pie charts for activity data
+    console.log("🎯 Canvas:", document.getElementById('training-chart'));
+
+
+        setTimeout(() => {
     createActivityCharts();
+    }, 100);
+
+    document.getElementById('edit-profile-btn').addEventListener('click', () => {
+    document.getElementById('profile-view').style.display = 'none';
+    document.getElementById('profile-edit').style.display = 'block';
+    });
+
 }
 
 // Function to create activity charts
+let trainingChartInstance, competitionsChartInstance, healthChartInstance;
+
 function createActivityCharts() {
-    // Check if Chart.js is loaded
-    if (typeof Chart === 'undefined') {
-        // If Chart.js is not loaded, dynamically add it
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
-        script.onload = initCharts;
-        document.head.appendChild(script);
-    } else {
-        initCharts();
-    }
-    
-    function initCharts() {
-        // Training sessions chart
-        new Chart(document.getElementById('training-chart'), {
-            type: 'pie',
-            data: {
-                labels: ['Completed', 'Upcoming', 'Cancelled'],
-                datasets: [{
-                    data: [12, 3, 2],
-                    backgroundColor: ['#4CAF50', '#2196F3', '#F44336'],
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-        
-        // Competitions chart
-        new Chart(document.getElementById('competitions-chart'), {
-            type: 'pie',
-            data: {
-                labels: ['Participated', 'Upcoming', 'Missed'],
-                datasets: [{
-                    data: [5, 2, 1],
-                    backgroundColor: ['#4CAF50', '#2196F3', '#F44336'],
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-        
-        // Health records chart
-        new Chart(document.getElementById('health-chart'), {
-            type: 'pie',
-            data: {
-                labels: ['Checkups', 'Injuries', 'Nutrition'],
-                datasets: [{
-                    data: [3, 1, 2],
-                    backgroundColor: ['#4CAF50', '#F44336', '#FFC107'],
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-    }
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user || !user.uid) return;
+
+  const userName = user.name.toLowerCase();
+
+  // ✅ Fix 1: Correct database paths (removed stray '}' characters)
+  const trainingRef = firebase.database().ref('trainings');
+  const competitionRef = firebase.database().ref('competitions'); // ✅ fixed
+  const healthRef = firebase.database().ref('healthRecords');     // ✅ fixed
+
+  Promise.all([
+    trainingRef.once("value"),
+    competitionRef.once("value"),
+    healthRef.once("value")
+  ])
+  .then(([trainingSnap, competitionSnap, healthSnap]) => {
+    const trainingRaw = trainingSnap.val() || {};
+    const competitionRaw = competitionSnap.val() || {};
+    const healthRaw = healthSnap.val() || {};
+
+    // ✅ Filter only user's trainings (based on athlete field)
+    const userTrainings = Object.values(trainingRaw);
+
+    // ✅ Use all competitions directly — no athlete field in your data
+    const allCompetitions = Object.values(competitionRaw);
+
+    // ✅ Filter only user's health records
+    const userHealth = Object.values(healthRaw);
+
+    // ✅ Training Chart
+    if (trainingChartInstance) trainingChartInstance.destroy();
+    trainingChartInstance = new Chart(document.getElementById('training-chart'), {
+      type: 'pie',
+      data: {
+        labels: ['Completed', 'Upcoming', 'Cancelled'],
+        datasets: [{
+          data: [
+            userTrainings.filter(t => t.status?.toLowerCase() === 'completed').length,
+            userTrainings.filter(t => t.status?.toLowerCase() === 'upcoming').length,
+            userTrainings.filter(t => t.status?.toLowerCase() === 'cancelled').length
+          ],
+          backgroundColor: ['#4CAF50', '#2196F3', '#F44336']
+        }]
+      }
+    });
+
+    // ✅ Competitions Chart
+    if (competitionsChartInstance) competitionsChartInstance.destroy();
+    competitionsChartInstance = new Chart(document.getElementById('competitions-chart'), {
+      type: 'pie',
+      data: {
+        labels: ['Completed', 'Upcoming', 'Missed'],
+        datasets: [{
+          data: [
+            allCompetitions.filter(c => c.status?.toLowerCase() === 'completed').length,
+            allCompetitions.filter(c => c.status?.toLowerCase() === 'upcoming').length,
+            allCompetitions.filter(c => c.status?.toLowerCase() === 'missed').length
+          ],
+          backgroundColor: ['#4CAF50', '#2196F3', '#F44336']
+        }]
+      }
+    });
+
+    // ✅ Health Chart
+    if (healthChartInstance) healthChartInstance.destroy();
+    healthChartInstance = new Chart(document.getElementById('health-chart'), {
+      type: 'pie',
+      data: {
+        labels: ['Checkups', 'Injuries', 'Nutrition'],
+        datasets: [{
+          data: [
+            userHealth.filter(h => h.type?.toLowerCase() === 'checkup').length,
+            userHealth.filter(h => h.type?.toLowerCase() === 'injury').length,
+            userHealth.filter(h => h.type?.toLowerCase() === 'nutrition').length
+          ],
+          backgroundColor: ['#4CAF50', '#F44336', '#FFC107']
+        }]
+      }
+    });
+
+  })
+  .catch(error => {
+    console.error("🔥 Error loading chart data:", error);
+  });
 }
+
+
+
+
 // Hide all containers
 function hideAllContainers() {
     const containers = [
@@ -339,3 +394,6 @@ function hideAllContainers() {
         if (el) el.style.display = 'none';
     });
 }
+document.addEventListener("DOMContentLoaded", () => {
+  checkAuth();
+});

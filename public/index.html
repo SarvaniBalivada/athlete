@@ -28,7 +28,10 @@
             <li><a href="#" id="health-link">Health</a></li>
             <li><a href="#" id="teams-link">Teams</a></li>
             <li><a href="#" id="profile-link">Profile</a></li>
+            <li><a href="#" id="connections-link">Connections</a></li>
             <li><a href="#" id="logout-link">Logout</a></li>
+            
+
         </ul>
     </div>
 
@@ -102,7 +105,15 @@
       <input type="text" id="training-athlete" placeholder="Athlete Name" required />
       <input type="text" id="training-coach" placeholder="Coach Name" required />
       <input type="date" id="training-date" required />
-      <input type="text" id="training-status" placeholder="Status" required />
+      <div class="form-group">
+        <label for="training-status">Status</label>
+        <select id="training-status" required>
+          <option value="Upcoming">Upcoming</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+
       <button type="submit">Save Training</button>
     </form>
   </div>
@@ -118,9 +129,16 @@
   <div id="add-competition-form" style="display: none; margin-top: 20px;">
     <h3>Add Competition</h3>
     <form id="competition-form">
+      
+
       <div class="form-group">
         <label for="comp-name">Name</label>
         <input type="text" id="comp-name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="comp-athletename">Athlete Name</label>
+        <input type="text" id="comp-athletename" required />
       </div>
 
       <div class="form-group">
@@ -138,14 +156,22 @@
         <select id="comp-status" required>
           <option value="Upcoming">Upcoming</option>
           <option value="Completed">Completed</option>
-          <option value="Registration Open">Registration Open</option>
+          <option value="Missed">Missed</option>
         </select>
       </div>
 
-      <div class="form-group">
-        <label for="comp-type">Type</label>
-        <input type="text" id="comp-type" required />
-      </div>
+    <div class="form-group">
+      <label for="comp-type">Type</label>
+      <select id="comp-type" required>
+        <option value="">Select Type</option>
+        <option value="Friendly">Friendly</option>
+        <option value="Tournament">Tournament</option>
+        <option value="League">League</option>
+        <option value="Practice">Practice</option>
+        <option value="Qualifier">Qualifier</option>
+      </select>
+    </div>
+
 
       <button type="submit">Save Competition</button>
     </form>
@@ -164,8 +190,15 @@
     <form id="health-form">
       <input type="date" id="health-date" required />
       <input type="text" id="health-athlete" placeholder="Athlete Name" required />
-      <input type="text" id="health-type" placeholder="Type (Injury, Checkup)" required />
-      <input type="text" id="health-status" placeholder="Status" required />
+      <div class="form-group">
+       <label for="health-type">Type</label>
+        <select id="health-type" required>
+          <option value="Checkup">Checkup</option>
+          <option value="Injury">Injury</option>
+          <option value="Nutrition">Nutrition</option>
+        </select>
+      </div>
+
       <textarea id="health-notes" placeholder="Notes" required></textarea>
       <button type="submit">Save Health Record</button>
     </form>
@@ -208,11 +241,20 @@
 
   <div id="teams-list" style="margin-top: 20px;"></div>
 </div>
+  
+  <div id="connections-section" style="display: none; background: #e6f3ff; padding: 15px;">
+    <h2>Your Connections</h2>
+    <div id="connection-requests"></div>
+    <div id="approved-connections"></div>
+    <div id="user-list"></div>
+</div>
 
   </main>
 
 
   <script src="js/auth.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/connections.js"></script>
+  <script src="js/app.js" defer></script>
+  
 </body>
 </html>
