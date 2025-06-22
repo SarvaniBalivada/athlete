@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const admin = require('firebase-admin');
+const admin = require('../firebaseAdmin');
 
 exports.protect = async (req, res, next) => {
     let token;

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const admin = require('firebase-admin');
+const admin = require('../firebaseAdmin');
 const { protect } = require('../middleware/auth');
 
 // Get Firestore instance
