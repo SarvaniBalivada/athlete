@@ -50,11 +50,13 @@ app.get('/api', (req, res) => {
   res.send('Athlete Management System API is running');
 });
 
-// Serve index.html for the root route
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
+// Root route should render EJS, not send HTML
+app.get("/", (req, res) => {
+  res.render("index"); // renders views/index.ejs
+});
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static('client/build'));
