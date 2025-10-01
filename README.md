@@ -4,7 +4,7 @@ A full-stack web application for athletes to manage their training sessions, com
 
 ## Features
 
-- **User Authentication**: Secure login and registration using Firebase Authentication
+- **User Authentication**: Secure login and registration
 - **Dashboard**: Overview of user activities and quick access to features
 - **Training Sessions**: Create, view, and manage training sessions
 - **Competitions**: Track upcoming and past competitions
@@ -17,13 +17,12 @@ A full-stack web application for athletes to manage their training sessions, com
 
 ### Backend
 - **Node.js** with **Express.js** for server-side logic
-- **Firebase Admin SDK** for backend authentication and database operations
-- **MongoDB** for data storage (via Firebase)
+- **Database** for data storage and authentication
 - **JWT** for session management
 
 ### Frontend
 - **React.js** for building the user interface
-- **Firebase SDK** for client-side authentication
+- **Authentication SDK** for client-side authentication
 - **CSS** for styling
 
 ## Project Structure
@@ -87,8 +86,7 @@ athlete/
 
 - Node.js (v14 or higher)
 - npm or yarn
-- Firebase project with Authentication and Firestore enabled
-- Service account key for Firebase Admin SDK
+- Authentication and database service of your choice
 
 ## Installation
 
@@ -110,26 +108,12 @@ athlete/
    cd ..
    ```
 
-4. **Set up Firebase:**
-   - Create a Firebase project at https://console.firebase.google.com/
-   - Enable Authentication and Firestore
-   - Generate a service account key and save it as `serviceAccountKey.json` in the root directory
-   - Update `firebaseAdmin.js` and `client/src/firebase.js` with your Firebase config
+4. **Set up authentication and database service:**
+   - Configure your preferred authentication and database service
+   - Update configuration files with your service credentials
 
 5. **Configure environment variables:**
-   - Copy `.env` file and update the values:
-     ```
-     PORT=3000
-     FIREBASE_PROJECT_ID=your-project-id
-     FIREBASE_PRIVATE_KEY_ID=your-private-key-id
-     FIREBASE_PRIVATE_KEY=your-private-key
-     FIREBASE_CLIENT_EMAIL=your-client-email
-     FIREBASE_CLIENT_ID=your-client-id
-     FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
-     FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
-     FIREBASE_AUTH_PROVIDER_CERT_URL=https://www.googleapis.com/oauth2/v1/certs
-     FIREBASE_CLIENT_CERT_URL=your-client-cert-url
-     ```
+   - Copy `.env` file and update the values as needed for your setup
 
 ## Running the Application
 
