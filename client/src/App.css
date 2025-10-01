@@ -12,6 +12,7 @@ body {
     line-height: 1.6;
 }
 
+
 header {
 
   top: 0;
@@ -39,6 +40,7 @@ main {
   margin-left: 230px; /* your sidebar offset */
 
 }
+
 
 
 .profile-info {
@@ -74,7 +76,7 @@ main {
     width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 10px;
 }
 
 button[type="submit"],
@@ -161,7 +163,7 @@ main {
     padding: 0 1rem;
 }
 
-#login-container, #register-container, #add-competition-container, #add-health-container, #add-team-container, #create-session-container {
+#login-container, #register-container, #add-competition-container, #add-training-container, #add-health-container, #add-team-container, #create-session-container {
     max-width: 600px;
     width: 90%;
     margin: 0;
@@ -175,6 +177,8 @@ main {
 
 #add-competition-container label,
 #add-competition-container h3,
+#add-training-container label,
+#add-training-container h3,
 #add-health-container label,
 #add-health-container h3,
 #add-team-container label,
@@ -226,7 +230,7 @@ main {
 }
 
 .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 label {
@@ -415,6 +419,12 @@ main {
 .sidebar.collapsed ~ main {
     transform: translateX(calc(50vw - 50% - 140px));
 }
+
+.modal-open .sidebar.collapsed ~ main {
+    transform: none;
+    margin-left: 30px;
+    transition: none;
+}
 .activity-charts {
     display: flex;
     flex-wrap: wrap;
@@ -602,8 +612,9 @@ canvas {
     font-size: 1.1rem;
 }
 
+
 .dashboard-activity {
-    background: #fff;
+    background: rgba(255, 255, 255, 0.9);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(44,62,80,0.08);
     padding: 24px 32px;
@@ -728,3 +739,4 @@ canvas {
   color: white;
   cursor: default;
 }
+

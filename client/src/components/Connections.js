@@ -123,7 +123,7 @@ const Connections = () => {
   };
 
   return (
-    <div id="connections-section" style={{ background: '#e6f3ff', padding: '15px' }}>
+    <div id="connections-section">
       <h2>Your Connections</h2>
 
       {/* Connection Requests */}

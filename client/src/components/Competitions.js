@@ -17,6 +17,15 @@ const Competitions = () => {
     loadCompetitions();
   }, []);
 
+  useEffect(() => {
+    if (showForm) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => document.body.classList.remove('modal-open');
+  }, [showForm]);
+
   const loadCompetitions = () => {
     db.ref('competitions').once('value').then(snapshot => {
       const data = [];

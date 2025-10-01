@@ -5,16 +5,26 @@ const Training = () => {
   const [trainings, setTrainings] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    athlete: '',
-    coach: '',
+    name: '',
+    athletename: '',
+    location: '',
     date: '',
-    status: 'Upcoming'
+    status: 'Upcoming',
+    type: ''
   });
 
   useEffect(() => {
     loadTrainings();
   }, []);
+
+  useEffect(() => {
+    if (showForm) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => document.body.classList.remove('modal-open');
+  }, [showForm]);
 
   const loadTrainings = () => {
     db.ref('trainings').once('value').then(snapshot => {
@@ -41,11 +51,12 @@ const Training = () => {
     db.ref('trainings').push(formData).then(() => {
       loadTrainings();
       setFormData({
-        title: '',
-        athlete: '',
-        coach: '',
+        name: '',
+        athletename: '',
+        location: '',
         date: '',
-        status: 'Upcoming'
+        status: 'Upcoming',
+        type: ''
       });
       setShowForm(false);
     }).catch(error => {
@@ -70,60 +81,89 @@ const Training = () => {
       </button>
 
       {showForm && (
-        <div id="add-training-form" style={{ marginTop: '20px' }}>
-          <h3>Add Training</h3>
-          <form id="training-form" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              id="training-title"
-              name="title"
-              placeholder="Title"
-              value={formData.title}
-              onChange={handleInputChange}
-              required
-            />
-            <input
-              type="text"
-              id="training-athlete"
-              name="athlete"
-              placeholder="Athlete Name"
-              value={formData.athlete}
-              onChange={handleInputChange}
-              required
-            />
-            <input
-              type="text"
-              id="training-coach"
-              name="coach"
-              placeholder="Coach Name"
-              value={formData.coach}
-              onChange={handleInputChange}
-              required
-            />
-            <input
-              type="date"
-              id="training-date"
-              name="date"
-              value={formData.date}
-              onChange={handleInputChange}
-              required
-            />
-            <div className="form-group">
-              <label htmlFor="training-status">Status</label>
-              <select
-                id="training-status"
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="Upcoming">Upcoming</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-            </div>
-            <button type="submit">Save Training</button>
-          </form>
+        <div className="modal-overlay" onClick={() => setShowForm(false)}>
+          <div id="add-training-container" className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-btn" onClick={() => setShowForm(false)}>×</button>
+            <h3>Add Training</h3>
+            <form id="training-form" onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="training-name">Name</label>
+                <input
+                  type="text"
+                  id="training-name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="training-athletename">Athlete Name</label>
+                <input
+                  type="text"
+                  id="training-athletename"
+                  name="athletename"
+                  value={formData.athletename}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="training-location">Location</label>
+                <input
+                  type="text"
+                  id="training-location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="training-date">Date</label>
+                <input
+                  type="date"
+                  id="training-date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="training-status">Status</label>
+                <select
+                  id="training-status"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="Upcoming">Upcoming</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="training-type">Type</label>
+                <select
+                  id="training-type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">Select Type</option>
+                  <option value="Practice">Practice</option>
+                  <option value="Conditioning">Conditioning</option>
+                  <option value="Skill Development">Skill Development</option>
+                  <option value="Recovery">Recovery</option>
+                  <option value="Match Preparation">Match Preparation</option>
+                </select>
+              </div>
+              <button type="submit">Save Training</button>
+            </form>
+          </div>
         </div>
       )}
 
@@ -134,9 +174,9 @@ const Training = () => {
           <table>
             <thead>
               <tr>
-                <th>Title</th>
-                <th>Athlete</th>
-                <th>Coach</th>
+                <th>Name</th>
+                <th>Athlete Name</th>
+                <th>Location</th>
                 <th>Date</th>
                 <th>Status</th>
               </tr>
@@ -144,9 +184,9 @@ const Training = () => {
             <tbody>
               {trainings.map((training, index) => (
                 <tr key={index}>
-                  <td>{training.title}</td>
-                  <td>{training.athlete}</td>
-                  <td>{training.coach}</td>
+                  <td>{training.name}</td>
+                  <td>{training.athletename}</td>
+                  <td>{training.location}</td>
                   <td>{formatDate(training.date)}</td>
                   <td>{training.status}</td>
                 </tr>

@@ -153,8 +153,8 @@ const Profile = () => {
 
   return (
     <div id="profile-container">
-      <h2>User Profile</h2>
       <div className="profile-info">
+        <h2>User Profile</h2>
         <div className="profile-section">
           <h3>Personal Information</h3>
           {!isEditing ? (
@@ -217,7 +217,7 @@ const Profile = () => {
                   />
                 </div>
                 <button type="submit">Save Changes</button>
-                <button type="button" onClick={() => setIsEditing(false)}>Cancel</button>
+                <button type="button" onClick={() => setIsEditing(false)} style={{marginLeft: '10px'}}>Cancel</button>
               </form>
             </div>
           )}

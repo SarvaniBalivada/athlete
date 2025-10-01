@@ -17,6 +17,15 @@ const Teams = () => {
     loadTeams();
   }, []);
 
+  useEffect(() => {
+    if (showForm) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => document.body.classList.remove('modal-open');
+  }, [showForm]);
+
   const loadTeams = () => {
     db.ref('teams').once('value').then(snapshot => {
       const data = [];
@@ -153,7 +162,6 @@ const Teams = () => {
             <button id="save-team-btn" type="submit">
               {editingTeamId ? 'Update Team' : 'Save Team'}
             </button>
-            <button type="button" onClick={resetForm}>Cancel</button>
           </form>
           </div>
         </div>

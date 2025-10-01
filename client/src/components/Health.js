@@ -15,6 +15,15 @@ const Health = () => {
     loadHealthRecords();
   }, []);
 
+  useEffect(() => {
+    if (showForm) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => document.body.classList.remove('modal-open');
+  }, [showForm]);
+
   const loadHealthRecords = () => {
     db.ref('healthRecords').once('value').then(snapshot => {
       const data = [];
@@ -64,45 +73,52 @@ const Health = () => {
             <button className="close-btn" onClick={() => setShowForm(false)}>×</button>
             <h3>Add Health Record</h3>
             <form id="health-form" onSubmit={handleSubmit}>
-            <input
-              type="date"
-              id="health-date"
-              name="date"
-              value={formData.date}
-              onChange={handleInputChange}
-              required
-            />
-            <input
-              type="text"
-              id="health-athlete"
-              name="athlete"
-              placeholder="Athlete Name"
-              value={formData.athlete}
-              onChange={handleInputChange}
-              required
-            />
-            <div className="form-group">
-              <label htmlFor="health-type">Type</label>
-              <select
-                id="health-type"
-                name="type"
-                value={formData.type}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="Checkup">Checkup</option>
-                <option value="Injury">Injury</option>
-                <option value="Nutrition">Nutrition</option>
-              </select>
-            </div>
-            <textarea
-              id="health-notes"
-              name="notes"
-              placeholder="Notes"
-              value={formData.notes}
-              onChange={handleInputChange}
-              required
-            ></textarea>
+              <div className="form-group">
+                <label htmlFor="health-date">Date</label>
+                <input
+                  type="date"
+                  id="health-date"
+                  name="date"
+                  value={formData.date}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="health-athlete">Athlete Name</label>
+                <input
+                  type="text"
+                  id="health-athlete"
+                  name="athlete"
+                  value={formData.athlete}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="health-type">Type</label>
+                <select
+                  id="health-type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="Checkup">Checkup</option>
+                  <option value="Injury">Injury</option>
+                  <option value="Nutrition">Nutrition</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="health-notes">Notes</label>
+                <textarea
+                  id="health-notes"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  required
+                ></textarea>
+              </div>
             <button type="submit">Save Health Record</button>
           </form>
           </div>
